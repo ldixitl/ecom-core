@@ -67,6 +67,19 @@ def test_product_price_setter(monkeypatch) -> None:
     assert product.price == 90000.0  # Цена изменилась
 
 
+def test_product_price_invalid(capsys) -> None:
+    """Проверяет работу сеттера price при некорректной цене"""
+    product = Product("Samsung Galaxy", "256GB, Серый цвет", 100000.0, 10)
+
+    product.price = 0
+    message = capsys.readouterr()
+    assert message.out.strip() == "Цена не должна быть нулевая или отрицательная."
+
+    product.price = -10
+    message = capsys.readouterr()
+    assert message.out.strip() == "Цена не должна быть нулевая или отрицательная."
+
+
 def test_new_product_creation() -> None:
     """Проверяет создание нового товара через new_product."""
     product_data = {"name": "MacBook Pro", "description": "16 дюймов, M2 Pro", "price": 300000.0, "quantity": 3}
