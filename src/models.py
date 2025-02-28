@@ -88,6 +88,9 @@ class Category:
 
         :param product: Объект класса Product, который нужно добавить.
         """
+        if not isinstance(product, Product):
+            raise TypeError("Можно добавлять только объекты класса Product или его наследников.")
+
         self.__products.append(product)
         Category.product_count += 1
 

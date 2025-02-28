@@ -1,3 +1,5 @@
+import pytest
+
 from src.models import Category, Product
 
 
@@ -9,6 +11,19 @@ def test_product_creation() -> None:
     assert product.description == "256GB, Серый цвет"
     assert product.price == 100000.0
     assert product.quantity == 10
+
+
+def test_add_product_type_check():
+    """Проверяет, что в категорию нельзя добавить объект, не являющийся Product."""
+    category = Category("Смартфоны", "Описание смартфонов")
+
+    class NotAProduct:
+        pass
+
+    not_a_product = NotAProduct()
+
+    with pytest.raises(TypeError, match="Можно добавлять только объекты класса Product или его наследников."):
+        category.add_product(not_a_product)
 
 
 def test_category_creation() -> None:
