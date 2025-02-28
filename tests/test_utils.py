@@ -35,7 +35,7 @@ def test_create_objects_from_json():
     assert len(categories) == 1
     assert isinstance(categories[0], Category)
     assert categories[0].name == "Смартфоны"
-    assert len(categories[0].products) == 2
-    assert isinstance(categories[0].products[0], Product)
-    assert categories[0].products[0].name == "Samsung Galaxy"
-    assert categories[0].products[0].price == 100000.0
+    assert len(categories[0].products_list) == 2
+    assert isinstance(categories[0].products_list[0], Product)
+    assert categories[0].products_list[0].name == "Samsung Galaxy"
+    assert categories[0].products_list[0].price == 100000.0
