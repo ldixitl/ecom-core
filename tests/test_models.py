@@ -1,3 +1,5 @@
+import pytest
+
 from src.models import Category, Product
 
 
@@ -11,6 +13,19 @@ def test_product_creation() -> None:
     assert product.quantity == 10
 
 
+def test_add_product_type_check():
+    """Проверяет, что в категорию нельзя добавить объект, не являющийся Product."""
+    category = Category("Смартфоны", "Описание смартфонов")
+
+    class NotAProduct:
+        pass
+
+    not_a_product = NotAProduct()
+
+    with pytest.raises(TypeError, match="Можно добавлять только объекты класса Product или его наследников."):
+        category.add_product(not_a_product)
+
+
 def test_category_creation() -> None:
     """Проверяет корректность создания объекта Category и обновление счетчика категорий."""
     initial_category_count = Category.category_count
@@ -18,7 +33,7 @@ def test_category_creation() -> None:
 
     assert category.name == "Смартфоны"
     assert category.description == "Описание смартфонов"
-    assert category.products == []
+    assert category.products_list == []
     assert Category.category_count == initial_category_count + 1
 
 
@@ -30,8 +45,8 @@ def test_category_add_product() -> None:
 
     category.add_product(product)
 
-    assert len(category.products) == 1
-    assert category.products[0] == product
+    assert len(category.products_list) == 1
+    assert category.products_list[0] == product
     assert Category.product_count == initial_product_count + 1
 
 
@@ -44,5 +59,65 @@ def test_category_initial_products() -> None:
     ]
     category = Category("Смартфоны", "Описание смартфонов", products)
 
-    assert len(category.products) == 2
+    assert len(category.products_list) == 2
     assert Category.product_count == initial_product_count + 2
+
+
+def test_product_price_setter(monkeypatch) -> None:
+    """Проверяет работу сеттера price, включая подтверждение снижения цены."""
+    product = Product("Samsung Galaxy", "256GB, Серый цвет", 100000.0, 10)
+
+    # Проверяем повышение цены
+    product.price = 110000.0
+    assert product.price == 110000.0
+
+    # Проверяем отмену снижения цены
+    monkeypatch.setattr("builtins.input", lambda _: "n")
+    product.price = 90000.0
+    assert product.price == 110000.0  # Цена не изменилась
+
+    # Проверяем подтвержденное снижение цены
+    monkeypatch.setattr("builtins.input", lambda _: "y")
+    product.price = 90000.0
+    assert product.price == 90000.0  # Цена изменилась
+
+
+def test_product_price_invalid(capsys) -> None:
+    """Проверяет работу сеттера price при некорректной цене"""
+    product = Product("Samsung Galaxy", "256GB, Серый цвет", 100000.0, 10)
+
+    product.price = 0
+    message = capsys.readouterr()
+    assert message.out.strip() == "Цена не должна быть нулевая или отрицательная."
+
+    product.price = -10
+    message = capsys.readouterr()
+    assert message.out.strip() == "Цена не должна быть нулевая или отрицательная."
+
+
+def test_new_product_creation() -> None:
+    """Проверяет создание нового товара через new_product."""
+    product_data = {"name": "MacBook Pro", "description": "16 дюймов, M2 Pro", "price": 300000.0, "quantity": 3}
+
+    product = Product.new_product(product_data)
+
+    assert isinstance(product, Product)
+    assert product.name == "MacBook Pro"
+    assert product.description == "16 дюймов, M2 Pro"
+    assert product.price == 300000.0
+    assert product.quantity == 3
+
+
+def test_new_product_update_existing() -> None:
+    """Проверяет обновление количества и цены существующего товара в new_product."""
+    category = Category("Ноутбуки", "Описание ноутбуков")
+    existing_product = Product("MacBook Pro", "16 дюймов, M2 Pro", 300000.0, 3)
+    category.add_product(existing_product)
+
+    updated_data = {"name": "MacBook Pro", "description": "16 дюймов, M2 Pro", "price": 320000.0, "quantity": 2}
+
+    updated_product = Product.new_product(updated_data)
+
+    assert updated_product is existing_product
+    assert updated_product.quantity == 5  # Количество обновилось
+    assert updated_product.price == 320000.0  # Цена обновилась на максимальную
