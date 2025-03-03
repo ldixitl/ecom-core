@@ -143,3 +143,30 @@ class Category:
     def products_list(self) -> list:  # Геттер для списка товаров (используется в new_product)
         """Возвращает список товаров."""
         return self.__products
+
+
+class CategoryIterator:
+    """Итератор для перебора товаров в категории."""
+
+    def __init__(self, category: Category) -> None:
+        """
+        Инициализирует итератор.
+
+        :param category: Объект класса 'Category'.
+        """
+        self.__products = category.products_list
+        self.index = 0
+
+    def __iter__(self) -> "CategoryIterator":
+        """Возвращает сам объект итератора."""
+        self.index = 0
+        return self
+
+    def __next__(self) -> Product:
+        """Возвращает следующий товар из списка."""
+        if self.index < len(self.__products):
+            product = self.__products[self.index]
+            self.index += 1
+            return product
+        else:
+            raise StopIteration
