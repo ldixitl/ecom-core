@@ -1,6 +1,6 @@
 import pytest
 
-from src.models import Category, Product
+from src.models import Category, CategoryIterator, Product
 
 
 def test_product_creation(first_product) -> None:
@@ -131,3 +131,17 @@ def test_new_product_update_existing() -> None:
     assert updated_product is existing_product
     assert updated_product.quantity == 5  # Количество обновилось
     assert updated_product.price == 320000.0  # Цена обновилась на максимальную
+
+
+def test_category_iterator(category_with_products, product_list) -> None:
+    """Проверяет корректность работы итератора по товарам категории."""
+    iterator = CategoryIterator(category_with_products)
+    assert iterator.index == 0
+
+    # Проверяем, что итератор проходит по всем товарам в правильном порядке
+    for product in product_list:
+        assert next(iterator) == product
+
+    # Проверяем, что итератор выбрасывает StopIteration после последнего элемента
+    with pytest.raises(StopIteration):
+        next(iterator)
