@@ -15,8 +15,28 @@ class Product:
         self.__price = price
         self.quantity = quantity
 
+    def __str__(self) -> str:
+        """
+        Возвращает строковое представление товара.
+
+        :return: Строка в формате "Название продукта, цена руб. Остаток: количество шт."
+        """
+        return f"{self.name}, {self.__price} руб. Остаток: {self.quantity} шт."
+
+    def __add__(self, other: "Product") -> float:
+        """
+        Складывает два товара, вычисляя их общую стоимость на складе.
+
+        :param other: Прибавляемый объект класса 'Product'.
+        :return: Общая стоимость товаров на складе.
+        """
+        if not isinstance(other, Product):
+            raise TypeError("Сложение возможно только между объектами класса 'Product'")
+
+        return self.__price * self.quantity + other.__price * other.quantity
+
     @classmethod
-    def new_product(cls, product_data: dict):
+    def new_product(cls, product_data: dict) -> "Product":
         """Создает новый объект Product или обновляет существующий товар."""
         for category in Category.all_categories:
             for product in category.products_list:
@@ -29,12 +49,12 @@ class Product:
         return new_product
 
     @property
-    def price(self):
+    def price(self) -> float:
         """Геттер для получения цены товара."""
         return self.__price
 
     @price.setter
-    def price(self, new_price):
+    def price(self, new_price: float) -> None:
         """Сеттер для изменения цены с проверкой корректности."""
         if new_price <= 0:
             print("Цена не должна быть нулевая или отрицательная.")
@@ -82,6 +102,17 @@ class Category:
         Category.product_count += len(products) if products else 0
         Category.all_categories.append(self)
 
+    def __str__(self) -> str:
+        """
+        Возвращает строковое представление категории.
+
+        :return: Строка в формате "Название категории, количество продуктов: остаток шт."
+        """
+        total_quantity = 0
+        for product in self.__products:
+            total_quantity += product.quantity
+        return f"{self.name}, количество продуктов: {total_quantity} шт."
+
     def add_product(self, product: Product) -> None:
         """
         Добавляет товар в категорию и обновляет общее количество товаров.
@@ -95,7 +126,7 @@ class Category:
         Category.product_count += 1
 
     @property
-    def products(self):
+    def products(self) -> str:
         """
         Геттер для получения списка товаров в категории.
 
@@ -105,10 +136,37 @@ class Category:
             return "В этой категории пока нет товаров."
         products_str = ""
         for product in self.__products:
-            products_str += f"{product.name}, {product.price} руб. Остаток: {product.quantity} шт.\n"
+            products_str += f"{str(product)}\n"
         return products_str
 
     @property
-    def products_list(self):  # Геттер для списка товаров (используется в new_product)
+    def products_list(self) -> list:  # Геттер для списка товаров (используется в new_product)
         """Возвращает список товаров."""
         return self.__products
+
+
+class CategoryIterator:
+    """Итератор для перебора товаров в категории."""
+
+    def __init__(self, category: Category) -> None:
+        """
+        Инициализирует итератор.
+
+        :param category: Объект класса 'Category'.
+        """
+        self.__products = category.products_list
+        self.index = 0
+
+    def __iter__(self) -> "CategoryIterator":
+        """Возвращает сам объект итератора."""
+        self.index = 0
+        return self
+
+    def __next__(self) -> Product:
+        """Возвращает следующий товар из списка."""
+        if self.index < len(self.__products):
+            product = self.__products[self.index]
+            self.index += 1
+            return product
+        else:
+            raise StopIteration

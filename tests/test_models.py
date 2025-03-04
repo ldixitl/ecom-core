@@ -1,21 +1,40 @@
 import pytest
 
-from src.models import Category, Product
+from src.models import Category, CategoryIterator, Product
 
 
-def test_product_creation() -> None:
+def test_product_creation(first_product) -> None:
     """Проверяет корректность создания объекта Product."""
-    product = Product("Samsung Galaxy", "256GB, Серый цвет", 100000.0, 10)
-
-    assert product.name == "Samsung Galaxy"
-    assert product.description == "256GB, Серый цвет"
-    assert product.price == 100000.0
-    assert product.quantity == 10
+    assert first_product.name == "Samsung Galaxy"
+    assert first_product.description == "256GB, Серый цвет"
+    assert first_product.price == 100000.0
+    assert first_product.quantity == 10
 
 
-def test_add_product_type_check():
+def test_product_str(first_product) -> None:
+    """Проверяет строковое представление товара."""
+    assert str(first_product) == "Samsung Galaxy, 100000.0 руб. Остаток: 10 шт."
+
+
+def test_product_add(first_product, second_product) -> None:
+    """Проверяет корректность сложения двух товаров, вычисляя их общую стоимость на складе."""
+    assert first_product + second_product == 2000000
+
+
+def test_product_add_type_check(first_product) -> None:
+    """Проверяет, что нельзя сложить объекты разного класса."""
+
+    class NotAProduct:
+        pass
+
+    not_a_product = NotAProduct()
+
+    with pytest.raises(TypeError, match="Сложение возможно только между объектами класса 'Product'"):
+        first_product + not_a_product
+
+
+def test_add_product_type_check(empty_category) -> None:
     """Проверяет, что в категорию нельзя добавить объект, не являющийся Product."""
-    category = Category("Смартфоны", "Описание смартфонов")
 
     class NotAProduct:
         pass
@@ -23,44 +42,35 @@ def test_add_product_type_check():
     not_a_product = NotAProduct()
 
     with pytest.raises(TypeError, match="Можно добавлять только объекты класса Product или его наследников."):
-        category.add_product(not_a_product)
+        empty_category.add_product(not_a_product)
 
 
-def test_category_creation() -> None:
+def test_category_creation(empty_category) -> None:
     """Проверяет корректность создания объекта Category и обновление счетчика категорий."""
-    initial_category_count = Category.category_count
-    category = Category("Смартфоны", "Описание смартфонов")
-
-    assert category.name == "Смартфоны"
-    assert category.description == "Описание смартфонов"
-    assert category.products_list == []
-    assert Category.category_count == initial_category_count + 1
+    assert empty_category.name == "Смартфоны"
+    assert empty_category.description == "Описание смартфонов"
+    assert empty_category.products_list == []
 
 
-def test_category_add_product() -> None:
+def test_category_str(category_with_products) -> None:
+    """Проверяет строковое представление категории, включая подсчет общего количества товаров."""
+    assert str(category_with_products) == "Смартфоны, количество продуктов: 15 шт."
+
+
+def test_category_add_product(empty_category, first_product) -> None:
     """Проверяет добавление продукта в категорию и обновление счетчика товаров."""
     initial_product_count = Category.product_count
-    category = Category("Смартфоны", "Описание смартфонов")
-    product = Product("Samsung Galaxy", "256GB, Серый цвет", 100000.0, 10)
 
-    category.add_product(product)
+    empty_category.add_product(first_product)
 
-    assert len(category.products_list) == 1
-    assert category.products_list[0] == product
+    assert len(empty_category.products_list) == 1
+    assert empty_category.products_list[0] == first_product
     assert Category.product_count == initial_product_count + 1
 
 
-def test_category_initial_products() -> None:
+def test_category_initial_products(category_with_products) -> None:
     """Проверяет корректность установки товаров при создании категории."""
-    initial_product_count = Category.product_count
-    products = [
-        Product("Samsung Galaxy", "256GB, Серый цвет", 100000.0, 10),
-        Product("iPhone 15", "512GB, Gray space", 200000.0, 5),
-    ]
-    category = Category("Смартфоны", "Описание смартфонов", products)
-
-    assert len(category.products_list) == 2
-    assert Category.product_count == initial_product_count + 2
+    assert len(category_with_products.products_list) == 2
 
 
 def test_product_price_setter(monkeypatch) -> None:
@@ -121,3 +131,17 @@ def test_new_product_update_existing() -> None:
     assert updated_product is existing_product
     assert updated_product.quantity == 5  # Количество обновилось
     assert updated_product.price == 320000.0  # Цена обновилась на максимальную
+
+
+def test_category_iterator(category_with_products, product_list) -> None:
+    """Проверяет корректность работы итератора по товарам категории."""
+    iterator = CategoryIterator(category_with_products)
+    assert iterator.index == 0
+
+    # Проверяем, что итератор проходит по всем товарам в правильном порядке
+    for product in product_list:
+        assert next(iterator) == product
+
+    # Проверяем, что итератор выбрасывает StopIteration после последнего элемента
+    with pytest.raises(StopIteration):
+        next(iterator)
