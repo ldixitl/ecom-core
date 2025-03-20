@@ -1,6 +1,6 @@
 import pytest
 
-from src.models import Category, CategoryIterator, Product, LawnGrass
+from src.models import Category, CategoryIterator, LawnGrass, Product
 
 
 def test_product_creation(first_product) -> None:
