@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from src.models import Category, Product
+from src.models import Category, Product, Smartphone, LawnGrass
 
 
 @pytest.fixture
@@ -52,3 +52,15 @@ def category_with_products(product_list) -> Category:
 def empty_category() -> Category:
     """Фикстура для категории без товаров."""
     return Category("Смартфоны", "Описание смартфонов")
+
+
+@pytest.fixture
+def smartphone() -> Smartphone:
+    """Фикстура для телефона."""
+    return Smartphone("iPhone 14", "Флагманский смартфон Apple", 120000.0, 5, 9500.0, "14 Pro", 256, "черный")
+
+
+@pytest.fixture
+def lawn_grass() -> LawnGrass:
+    """Фикстура для газонной травы."""
+    return LawnGrass("GreenLife", "Быстрорастущая газонная трава", 1500.0, 20, "Германия", "10-14 дней", "зеленый")
