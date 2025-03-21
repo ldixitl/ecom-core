@@ -25,7 +25,7 @@ class Product:
 
     def __add__(self, other: "Product") -> float:
         """
-        Складывает два товара, вычисляя их общую стоимость на складе.
+        Складывает два товара одного типа, вычисляя их общую стоимость на складе.
 
         :param other: Прибавляемый объект класса 'Product'.
         :return: Общая стоимость товаров на складе.
@@ -33,7 +33,10 @@ class Product:
         if not isinstance(other, Product):
             raise TypeError("Сложение возможно только между объектами класса 'Product'")
 
-        return self.__price * self.quantity + other.__price * other.quantity
+        if type(other) is self.__class__:
+            return self.price * self.quantity + other.price * other.quantity
+        else:
+            raise TypeError(f"Нельзя складывать товары разных типов: {type(self).__name__} и {type(other).__name__}.")
 
     @classmethod
     def new_product(cls, product_data: dict) -> "Product":
@@ -72,6 +75,92 @@ class Product:
                     print("Некорректный ввод. Введите 'y' или 'n'.")
         else:
             self.__price = new_price  # Если цена повышается, просто обновляем
+
+
+class Smartphone(Product):
+    """Класс, представляющий смартфон как товар."""
+
+    def __init__(
+        self,
+        name: str,
+        description: str,
+        price: float,
+        quantity: int,
+        efficiency: float,
+        model: str,
+        memory: int,
+        color: str,
+    ) -> None:
+        """
+        Инициализирует объект товара 'Смартфон'.
+
+        :param name: Название смартфона.
+        :param description: Описание смартфона.
+        :param price: Цена смартфона.
+        :param quantity: Количество смартфонов в наличии.
+        :param efficiency: Производительность (например, в бенчмарках).
+        :param model: Модель смартфона.
+        :param memory: Объём встроенной памяти (в ГБ).
+        :param color: Цвет смартфона.
+        """
+        super().__init__(name, description, price, quantity)
+        self.efficiency = efficiency
+        self.model = model
+        self.memory = memory
+        self.color = color
+
+    def __str__(self) -> str:
+        """
+        Возвращает строковое представление смартфона.
+
+        :return: Строка в формате "Название (модель), цвет, память ГБ, цена руб. Остаток: количество шт."
+        """
+        return (
+            f"{self.name} ({self.model}), {self.color}, {self.memory} ГБ, "
+            f"{self.price} руб. Остаток: {self.quantity} шт."
+        )
+
+
+class LawnGrass(Product):
+    """Класс, представляющий газонную траву как товар."""
+
+    def __init__(
+        self,
+        name: str,
+        description: str,
+        price: float,
+        quantity: int,
+        country: str,
+        germination_period: str,
+        color: str,
+    ) -> None:
+        """
+        Инициализирует объект товара 'Газонная трава'.
+
+        :param name: Название травы.
+        :param description: Описание травы.
+        :param price: Цена за упаковку.
+        :param quantity: Количество упаковок в наличии.
+        :param country: Страна-производитель.
+        :param germination_period: Срок прорастания (например, "10-14 дней").
+        :param color: Цвет травы (например, "зеленый").
+        """
+        super().__init__(name, description, price, quantity)
+        self.country = country
+        self.germination_period = germination_period
+        self.color = color
+
+    def __str__(self) -> str:
+        """
+        Возвращает строковое представление газонной травы.
+
+        :return: Строка в формате "Название, цвет, страна, прорастание, цена руб. Остаток: количество шт."
+        """
+        return (
+            f"{self.name}, {self.color}, {self.country}, "
+            f"прорастание: {self.germination_period}, "
+            f"{self.price} руб. Остаток: {self.quantity} шт."
+        )
 
 
 class Category:

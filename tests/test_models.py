@@ -1,6 +1,6 @@
 import pytest
 
-from src.models import Category, CategoryIterator, Product
+from src.models import Category, CategoryIterator, LawnGrass, Product
 
 
 def test_product_creation(first_product) -> None:
@@ -31,6 +31,47 @@ def test_product_add_type_check(first_product) -> None:
 
     with pytest.raises(TypeError, match="Сложение возможно только между объектами класса 'Product'"):
         first_product + not_a_product
+
+
+def test_product_add_different_types(first_product) -> None:
+    """Проверяет, что нельзя сложить товары разных типов."""
+    lawn_grass = LawnGrass("Газонная трава", "Быстрорастущая", 500.0, 20, "Россия", "14 дней", "Зеленый")
+
+    with pytest.raises(TypeError, match="Нельзя складывать товары разных типов"):
+        first_product + lawn_grass
+
+
+def test_smartphone_creation(smartphone) -> None:
+    """Проверяет корректность создания объекта Smartphone."""
+    assert smartphone.name == "iPhone 14"
+    assert smartphone.description == "Флагманский смартфон Apple"
+    assert smartphone.price == 120000.0
+    assert smartphone.quantity == 5
+    assert smartphone.efficiency == 9500.0
+    assert smartphone.model == "14 Pro"
+    assert smartphone.memory == 256
+    assert smartphone.color == "черный"
+
+
+def test_smartphone_str(smartphone) -> None:
+    """Проверяет строковое представление смартфона."""
+    assert str(smartphone) == "iPhone 14 (14 Pro), черный, 256 ГБ, 120000.0 руб. Остаток: 5 шт."
+
+
+def test_lawn_grass_creation(lawn_grass) -> None:
+    """Проверяет корректность создания объекта LawnGrass."""
+    assert lawn_grass.name == "GreenLife"
+    assert lawn_grass.description == "Быстрорастущая газонная трава"
+    assert lawn_grass.price == 1500.0
+    assert lawn_grass.quantity == 20
+    assert lawn_grass.country == "Германия"
+    assert lawn_grass.germination_period == "10-14 дней"
+    assert lawn_grass.color == "зеленый"
+
+
+def test_lawn_grass_str(lawn_grass) -> None:
+    """Проверяет строковое представление газонной травы."""
+    assert str(lawn_grass) == "GreenLife, зеленый, Германия, прорастание: 10-14 дней, 1500.0 руб. Остаток: 20 шт."
 
 
 def test_add_product_type_check(empty_category) -> None:
@@ -66,6 +107,16 @@ def test_category_add_product(empty_category, first_product) -> None:
     assert len(empty_category.products_list) == 1
     assert empty_category.products_list[0] == first_product
     assert Category.product_count == initial_product_count + 1
+
+
+def test_category_add_product_invalid(empty_category) -> None:
+    """Проверяет, что нельзя добавить объект, не являющийся Product."""
+
+    class NotAProduct:
+        pass
+
+    with pytest.raises(TypeError):
+        empty_category.add_product(NotAProduct())
 
 
 def test_category_initial_products(category_with_products) -> None:
