@@ -148,12 +148,11 @@ def test_product_price_invalid(capsys) -> None:
     product = Product("Samsung Galaxy", "256GB, Серый цвет", 100000.0, 10)
 
     product.price = 0
-    message = capsys.readouterr()
-    assert message.out.strip() == "Цена не должна быть нулевая или отрицательная."
-
     product.price = -10
-    message = capsys.readouterr()
-    assert message.out.strip() == "Цена не должна быть нулевая или отрицательная."
+    message = capsys.readouterr().out.strip().split("\n")
+
+    assert message[1] == "Цена не должна быть нулевая или отрицательная."
+    assert message[2] == "Цена не должна быть нулевая или отрицательная."
 
 
 def test_new_product_creation() -> None:
