@@ -1,4 +1,8 @@
-class Product:
+from src.abstract import BaseEntity, BaseProduct
+from src.mixins import LoggingMixin
+
+
+class Product(BaseProduct, LoggingMixin):
     """Класс, представляющий товар."""
 
     def __init__(self, name: str, description: str, price: float, quantity: int) -> None:
@@ -14,6 +18,7 @@ class Product:
         self.description = description
         self.__price = price
         self.quantity = quantity
+        super().__init__()
 
     def __str__(self) -> str:
         """
@@ -163,7 +168,7 @@ class LawnGrass(Product):
         )
 
 
-class Category:
+class Category(BaseEntity):
     """
     Класс, представляющий категорию товаров.
 
@@ -184,8 +189,8 @@ class Category:
         :param description: Описание категории.
         :param products: Список товаров в категории (по умолчанию пустой).
         """
-        self.name = name
-        self.description = description
+        super().__init__(name, description)
+
         self.__products = list(products) if products else []
         Category.category_count += 1
         Category.product_count += len(products) if products else 0
