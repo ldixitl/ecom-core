@@ -18,7 +18,7 @@ def test_read_json_invalid() -> None:
         read_json("non_existent.json")
 
 
-def test_create_objects_from_json():
+def test_create_objects_from_json() -> None:
     """Проверяет корректность создания объектов Category и Product."""
     data = [
         {
