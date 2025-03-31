@@ -1,5 +1,6 @@
 import pytest
 
+from src.exceptions import ZeroQuantityError
 from src.models import Category, CategoryIterator, LawnGrass, Product
 
 
@@ -168,6 +169,24 @@ def test_new_product_creation() -> None:
     assert product.quantity == 3
 
 
+def test_new_product_creation_exception() -> None:
+    """Проверяет выброс ошибки при создании нового товара через new_product с нулевым количеством."""
+    product_data = {"name": "MacBook Pro", "description": "16 дюймов, M2 Pro", "price": 300000.0, "quantity": 0}
+
+    with pytest.raises(
+        ZeroQuantityError, match="Товар 'MacBook Pro' не может иметь нулевое количество при создании или заказе."
+    ):
+        Product.new_product(product_data)
+
+
+def test_product_zero_quantity():
+    """Проверяет, что нельзя создать товар с нулевым количеством."""
+    with pytest.raises(
+        ZeroQuantityError, match="Товар 'Тестовый товар' не может иметь нулевое количество при создании или заказе."
+    ):
+        Product("Тестовый товар", "Описание", 1000.0, 0)
+
+
 def test_new_product_update_existing() -> None:
     """Проверяет обновление количества и цены существующего товара в new_product."""
     category = Category("Ноутбуки", "Описание ноутбуков")
@@ -181,6 +200,14 @@ def test_new_product_update_existing() -> None:
     assert updated_product is existing_product
     assert updated_product.quantity == 5  # Количество обновилось
     assert updated_product.price == 320000.0  # Цена обновилась на максимальную
+
+
+def test_category_average_price(category_with_products, first_product, second_product, empty_category) -> None:
+    """Проверяет расчет среднего ценника товаров в категории."""
+    expected_avg_price = (first_product.price + second_product.price) / 2
+    assert category_with_products.avg_price() == expected_avg_price
+
+    assert empty_category.avg_price() == 0
 
 
 def test_category_iterator(category_with_products, product_list) -> None:
