@@ -1,4 +1,5 @@
 from src.abstract import BaseEntity, BaseProduct
+from src.exceptions import ZeroQuantityError
 from src.mixins import LoggingMixin
 
 
@@ -14,6 +15,9 @@ class Product(BaseProduct, LoggingMixin):
         :param price: Цена товара.
         :param quantity: Количество товара в наличии.
         """
+        if quantity <= 0:
+            raise ZeroQuantityError(name)
+
         self.name = name
         self.description = description
         self.__price = price
@@ -46,6 +50,9 @@ class Product(BaseProduct, LoggingMixin):
     @classmethod
     def new_product(cls, product_data: dict) -> "Product":
         """Создает новый объект Product или обновляет существующий товар."""
+        if product_data["quantity"] <= 0:
+            raise ZeroQuantityError(product_data["name"])
+
         for category in Category.all_categories:
             for product in category.products_list:
                 if product.name == product_data["name"]:
@@ -237,6 +244,13 @@ class Category(BaseEntity):
     def products_list(self) -> list:  # Геттер для списка товаров (используется в new_product)
         """Возвращает список товаров."""
         return self.__products
+
+    def avg_price(self):
+        """Вычисляет среднюю цену товаров в категории."""
+        try:
+            return sum(product.price for product in self.__products) / len(self.__products)
+        except ZeroDivisionError:
+            return 0
 
 
 class CategoryIterator:

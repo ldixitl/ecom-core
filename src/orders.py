@@ -1,4 +1,5 @@
 from src.abstract import BaseEntity
+from src.exceptions import ZeroQuantityError
 from src.models import Product
 
 
@@ -12,17 +13,27 @@ class Order(BaseEntity):
         :param product: Экземпляр товара.
         :param quantity: Количество единиц товара в заказе.
         """
-        if quantity > product.quantity:
-            raise ValueError(f"Недостаточно товара {product.name} на складе. В наличии: {product.quantity} шт.")
+        try:
+            if quantity == 0:
+                raise ZeroQuantityError(product.name)
 
-        super().__init__(product.name, product.description)
+            if quantity > product.quantity:
+                raise ValueError(f"Недостаточно товара {product.name} на складе. В наличии: {product.quantity} шт.")
 
-        self.product = product
-        self.quantity = quantity
-        self.total_price = product.price * quantity
+            super().__init__(product.name, product.description)
 
-        # Уменьшаем количество товара на складе.
-        product.quantity -= quantity
+            self.product = product
+            self.quantity = quantity
+            self.total_price = product.price * quantity
+
+            # Уменьшаем количество товара на складе.
+            product.quantity -= quantity
+        except (ZeroQuantityError, ValueError) as e:
+            print(f"Ошибка: {e}")
+        else:
+            print(f"Заказ на {quantity} x {product.name} успешно создан.")
+        finally:
+            print("Обработка заказа завершена.")
 
     def __str__(self) -> str:
         """Возвращает строковое представление заказа."""
